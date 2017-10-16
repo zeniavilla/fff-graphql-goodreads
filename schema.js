@@ -15,9 +15,11 @@ const BookType = new GraphQLObjectType({
   fields: () => ({
     title: {
       type: GraphQLString,
+      resolve: xml => xml.title[0]
     },
     isbn: {
-      type: GraphQLString
+      type: GraphQLString,
+      resolve: xml => xml.isbn[0]
     }
   }),
 });
@@ -34,7 +36,7 @@ const AuthorType = new GraphQLObjectType({
     books: {
       type: new GraphQLList(BookType),
       resolve: xml =>
-        xml.GoodreadsResponse.author[0].books[0]
+        xml.GoodreadsResponse.author[0].books[0].book
     }
   }),
 });
