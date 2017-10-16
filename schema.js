@@ -5,22 +5,39 @@ const {
   GraphQLSchema,
   GraphQLObjectType,
   GraphQLInt,
-  GraphQLString
+  GraphQLString,
+  GraphQLList
 } = require('graphql');
-// fetch(
-//   'https://www.goodreads.com/author/show.xml?id=4432&key=risKm8wwXsIcyEiTktvA'
-// ).then(response => response.text())
-// .then(parseXML);
+
+const BookType = new GraphQLObjectType({
+  name: 'Book',
+  description: '...',
+  fields: () => ({
+    title: {
+      type: GraphQLString,
+    },
+    isbn: {
+      type: GraphQLString
+    }
+  }),
+});
 
 const AuthorType = new GraphQLObjectType({
   name: 'Author',
   description: '...',
   fields: () => ({
     name: {
-      type: GraphQLString
+      type: GraphQLString,
+      resolve: xml => 
+        xml.GoodreadsResponse.author[0].name[0]
+    },
+    books: {
+      type: new GraphQLList(BookType),
+      resolve: xml =>
+        xml.GoodreadsResponse.author[0].books[0]
     }
-  })
-})
+  }),
+});
 
 module.exports = new GraphQLSchema({
   query: new GraphQLObjectType({
@@ -31,8 +48,12 @@ module.exports = new GraphQLSchema({
         type: AuthorType,
         args: {
           id: { type: GraphQLInt }
-        }
+        },
+        resolve: (root, args) => fetch(
+          `https://www.goodreads.com/author/show.xml?id=${args.id}&key=CrXEAD8jCIBbVdIlM3Bxiw`
+        ).then(response => response.text())
+        .then(parseXML)
       }
-    })
-  })
-})
+    }),
+  }),
+});
